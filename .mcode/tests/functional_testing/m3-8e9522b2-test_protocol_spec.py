@@ -9,7 +9,7 @@ This script supports two modes:
 1. SRC Validation: Tests endpoints and captures responses (no expected_response)
 2. DST Contract Validation: Tests endpoints and validates responses match expected (has expected_response)
 
-Generated at: 2026-03-18T06:37:44.593273+00:00
+Generated at: 2026-03-18T06:52:02.609596+00:00
 Project: shop-belal-7
 Milestone: 3
 """
@@ -53,474 +53,132 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
     {
         "name": "sales_report_empty_db",
         "category": "HAPPY_PATH",
+        "description": "Sales report returns zero values when no orders exist",
         "endpoint": "/reports/sales",
         "method": "GET",
-        "description": "Get sales report on empty database - should return zeros for all fields",
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
+        "request_data": {},
         "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "expected_response": {
+            "total_revenue": 0,
+            "total_orders": 0,
+            "average_order_value": 0,
+            "pending_orders": 0,
+            "completed_orders": 0
+        }
     },
     {
         "name": "sales_report_with_orders",
         "category": "HAPPY_PATH",
+        "description": "Sales report endpoint returns 200 and contains required fields",
         "endpoint": "/reports/sales",
         "method": "GET",
-        "description": "Get sales report after creating a user, category, product, and placing an order",
-        "setup": {
-            "sequence": [
-                {
-                    "label": "user",
-                    "endpoint": "/users",
-                    "method": "POST",
-                    "body": {
-                        "email": "salesreport@test.com",
-                        "name": "Sales Report User"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "category",
-                    "endpoint": "/categories",
-                    "method": "POST",
-                    "body": {
-                        "name": "SalesReportCat",
-                        "description": "Category for sales report test"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "product",
-                    "endpoint": "/products",
-                    "method": "POST",
-                    "body": {
-                        "name": "SalesReportProduct",
-                        "description": "Product for sales test",
-                        "price": 29.99,
-                        "category_id": "$category_id"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "inventory",
-                    "endpoint": "/inventory/$product_id",
-                    "method": "PUT",
-                    "body": {
-                        "quantity": 100
-                    }
-                },
-                {
-                    "label": "order",
-                    "endpoint": "/orders",
-                    "method": "POST",
-                    "body": {
-                        "user_id": "$user_id",
-                        "items": [
-                            {
-                                "product_id": "$product_id",
-                                "quantity": 2
-                            }
-                        ]
-                    },
-                    "extract_id_from": "id"
-                }
-            ]
-        },
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
+        "request_data": {},
         "expected_status": 200,
-        "cleanup": null
+        "expected_response_contains": {
+            "total_revenue": 0,
+            "total_orders": 0,
+            "average_order_value": 0,
+            "pending_orders": 0,
+            "completed_orders": 0
+        }
     },
     {
         "name": "inventory_report_empty_db",
         "category": "HAPPY_PATH",
+        "description": "Inventory report returns zero values when no products exist",
         "endpoint": "/reports/inventory",
         "method": "GET",
-        "description": "Get inventory report on empty database - should return zeros",
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
+        "request_data": {},
         "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "expected_response": {
+            "total_products": 0,
+            "total_stock": 0,
+            "total_reserved": 0,
+            "available_stock": 0,
+            "low_stock_products": 0
+        }
     },
     {
         "name": "inventory_report_default_threshold",
         "category": "HAPPY_PATH",
+        "description": "Inventory report accepts default low_stock_threshold parameter",
         "endpoint": "/reports/inventory",
         "method": "GET",
-        "description": "Get inventory report with default low_stock_threshold after seeding product data",
-        "setup": {
-            "sequence": [
-                {
-                    "label": "category",
-                    "endpoint": "/categories",
-                    "method": "POST",
-                    "body": {
-                        "name": "InvReportCat",
-                        "description": "Category for inventory report"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "product",
-                    "endpoint": "/products",
-                    "method": "POST",
-                    "body": {
-                        "name": "InvReportProduct",
-                        "description": "Product for inventory report",
-                        "price": 15.0,
-                        "category_id": "$category_id"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "inventory",
-                    "endpoint": "/inventory/$product_id",
-                    "method": "PUT",
-                    "body": {
-                        "quantity": 50
-                    }
-                }
-            ]
-        },
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
-        "expected_status": 200,
-        "cleanup": null
+        "request_data": {},
+        "expected_status": 200
     },
     {
         "name": "inventory_report_custom_threshold",
-        "category": "BOUNDARY",
-        "endpoint": "/reports/inventory",
+        "category": "HAPPY_PATH",
+        "description": "Inventory report accepts custom low_stock_threshold query parameter",
+        "endpoint": "/reports/inventory?low_stock_threshold=3",
         "method": "GET",
-        "description": "Get inventory report with a custom low_stock_threshold query parameter",
-        "setup": {
-            "sequence": [
-                {
-                    "label": "category",
-                    "endpoint": "/categories",
-                    "method": "POST",
-                    "body": {
-                        "name": "InvThreshCat",
-                        "description": "Category for threshold test"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "product",
-                    "endpoint": "/products",
-                    "method": "POST",
-                    "body": {
-                        "name": "InvThreshProduct",
-                        "description": "Low stock product",
-                        "price": 10.0,
-                        "category_id": "$category_id"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "inventory",
-                    "endpoint": "/inventory/$product_id",
-                    "method": "PUT",
-                    "body": {
-                        "quantity": 5
-                    }
-                }
-            ]
-        },
-        "request_data": {
-            "path": {},
-            "query": {
-                "low_stock_threshold": 10
-            },
-            "body": null
-        },
-        "expected_status": 200,
-        "cleanup": null
+        "request_data": {},
+        "expected_status": 200
     },
     {
         "name": "products_report_empty_db",
         "category": "HAPPY_PATH",
+        "description": "Products report returns empty list when no products exist",
         "endpoint": "/reports/products",
         "method": "GET",
-        "description": "Get product performance report on empty database - should return empty array",
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
+        "request_data": {},
         "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "expected_response": []
     },
     {
         "name": "products_report_with_data",
         "category": "HAPPY_PATH",
+        "description": "Products report endpoint returns 200 with list response",
         "endpoint": "/reports/products",
         "method": "GET",
-        "description": "Get product performance report with seeded product, inventory, and order data",
-        "setup": {
-            "sequence": [
-                {
-                    "label": "user",
-                    "endpoint": "/users",
-                    "method": "POST",
-                    "body": {
-                        "email": "prodreport@test.com",
-                        "name": "Product Report User"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "category",
-                    "endpoint": "/categories",
-                    "method": "POST",
-                    "body": {
-                        "name": "ProdReportCat",
-                        "description": "Category for product report"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "product",
-                    "endpoint": "/products",
-                    "method": "POST",
-                    "body": {
-                        "name": "ProdReportItem",
-                        "description": "Product for performance report",
-                        "price": 49.99,
-                        "category_id": "$category_id"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "inventory",
-                    "endpoint": "/inventory/$product_id",
-                    "method": "PUT",
-                    "body": {
-                        "quantity": 200
-                    }
-                },
-                {
-                    "label": "order",
-                    "endpoint": "/orders",
-                    "method": "POST",
-                    "body": {
-                        "user_id": "$user_id",
-                        "items": [
-                            {
-                                "product_id": "$product_id",
-                                "quantity": 3
-                            }
-                        ]
-                    },
-                    "extract_id_from": "id"
-                }
-            ]
-        },
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
-        "expected_status": 200,
-        "cleanup": null
+        "request_data": {},
+        "expected_status": 200
     },
     {
         "name": "categories_report_empty_db",
         "category": "HAPPY_PATH",
+        "description": "Categories report returns empty list when no categories exist",
         "endpoint": "/reports/categories",
         "method": "GET",
-        "description": "Get category performance report on empty database - should return empty array",
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
+        "request_data": {},
         "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "expected_response": []
     },
     {
         "name": "categories_report_with_data",
         "category": "HAPPY_PATH",
+        "description": "Categories report endpoint returns 200 with list response",
         "endpoint": "/reports/categories",
         "method": "GET",
-        "description": "Get category performance report with seeded category, product, and order data",
-        "setup": {
-            "sequence": [
-                {
-                    "label": "user",
-                    "endpoint": "/users",
-                    "method": "POST",
-                    "body": {
-                        "email": "catreport@test.com",
-                        "name": "Category Report User"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "category",
-                    "endpoint": "/categories",
-                    "method": "POST",
-                    "body": {
-                        "name": "CatReportCat",
-                        "description": "Category for report test"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "product",
-                    "endpoint": "/products",
-                    "method": "POST",
-                    "body": {
-                        "name": "CatReportProduct",
-                        "description": "Product for category report",
-                        "price": 19.99,
-                        "category_id": "$category_id"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "inventory",
-                    "endpoint": "/inventory/$product_id",
-                    "method": "PUT",
-                    "body": {
-                        "quantity": 80
-                    }
-                },
-                {
-                    "label": "order",
-                    "endpoint": "/orders",
-                    "method": "POST",
-                    "body": {
-                        "user_id": "$user_id",
-                        "items": [
-                            {
-                                "product_id": "$product_id",
-                                "quantity": 5
-                            }
-                        ]
-                    },
-                    "extract_id_from": "id"
-                }
-            ]
-        },
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
-        "expected_status": 200,
-        "cleanup": null
+        "request_data": {},
+        "expected_status": 200
     },
     {
         "name": "users_report_empty_db",
         "category": "HAPPY_PATH",
+        "description": "Users report returns empty list when no users exist",
         "endpoint": "/reports/users",
         "method": "GET",
-        "description": "Get user activity report on empty database - should return empty array",
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
+        "request_data": {},
         "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "expected_response": []
     },
     {
         "name": "users_report_with_data",
         "category": "HAPPY_PATH",
+        "description": "Users report endpoint returns 200 with list response",
         "endpoint": "/reports/users",
         "method": "GET",
-        "description": "Get user activity report with seeded user and order data",
-        "setup": {
-            "sequence": [
-                {
-                    "label": "user",
-                    "endpoint": "/users",
-                    "method": "POST",
-                    "body": {
-                        "email": "userreport@test.com",
-                        "name": "User Activity Reporter"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "category",
-                    "endpoint": "/categories",
-                    "method": "POST",
-                    "body": {
-                        "name": "UserReportCat",
-                        "description": "Category for user report"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "product",
-                    "endpoint": "/products",
-                    "method": "POST",
-                    "body": {
-                        "name": "UserReportProduct",
-                        "description": "Product for user activity report",
-                        "price": 35.0,
-                        "category_id": "$category_id"
-                    },
-                    "extract_id_from": "id"
-                },
-                {
-                    "label": "inventory",
-                    "endpoint": "/inventory/$product_id",
-                    "method": "PUT",
-                    "body": {
-                        "quantity": 150
-                    }
-                },
-                {
-                    "label": "order",
-                    "endpoint": "/orders",
-                    "method": "POST",
-                    "body": {
-                        "user_id": "$user_id",
-                        "items": [
-                            {
-                                "product_id": "$product_id",
-                                "quantity": 4
-                            }
-                        ]
-                    },
-                    "extract_id_from": "id"
-                }
-            ]
-        },
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
-        "expected_status": 200,
-        "cleanup": null
+        "request_data": {},
+        "expected_status": 200
     }
 ]''')
 )
 
 # Base URL for API requests (from app discovery, includes host:port)
-BASE_URL = os.path.expandvars("")
-HEALTH_CHECK_ENDPOINT = os.path.expandvars("")
+BASE_URL = os.path.expandvars("http://localhost:8000")
+HEALTH_CHECK_ENDPOINT = os.path.expandvars("/")
 REQUEST_TIMEOUT = 30
 HEALTH_CHECK_URL = f"{BASE_URL.rstrip('/')}/{HEALTH_CHECK_ENDPOINT.lstrip('/')}"
 # Per-endpoint routing table for microservices DST

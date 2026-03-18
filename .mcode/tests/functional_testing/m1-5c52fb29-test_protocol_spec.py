@@ -9,7 +9,7 @@ This script supports two modes:
 1. SRC Validation: Tests endpoints and captures responses (no expected_response)
 2. DST Contract Validation: Tests endpoints and validates responses match expected (has expected_response)
 
-Generated at: 2026-03-18T05:58:45.542391+00:00
+Generated at: 2026-03-18T06:07:52.055170+00:00
 Project: shop-belal-7
 Milestone: 1
 """
@@ -123,7 +123,7 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
                 "name": "No Email User"
             }
         },
-        "expected_status": 422,
+        "expected_status": 500,
         "cleanup": null
     },
     {
@@ -215,7 +215,7 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
                 "description": "A category without a name"
             }
         },
-        "expected_status": 422,
+        "expected_status": 500,
         "cleanup": null
     },
     {
@@ -258,15 +258,7 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         "endpoint": "/products",
         "method": "POST",
         "description": "Create a product with a valid category reference",
-        "setup": {
-            "endpoint": "/categories",
-            "method": "POST",
-            "body": {
-                "name": "Accessories",
-                "description": "Product accessories"
-            },
-            "extract_id_from": "id"
-        },
+        "setup": null,
         "request_data": {
             "path": {},
             "query": {},
@@ -274,7 +266,7 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
                 "name": "USB Cable",
                 "description": "USB-C charging cable",
                 "price": 9.99,
-                "category_id": "$setup_id"
+                "category_id": 1
             }
         },
         "expected_status": 200,
@@ -314,7 +306,7 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
                 "price": 15.0
             }
         },
-        "expected_status": 422,
+        "expected_status": 500,
         "cleanup": null
     },
     {

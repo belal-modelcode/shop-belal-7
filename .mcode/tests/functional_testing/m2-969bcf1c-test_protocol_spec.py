@@ -9,7 +9,7 @@ This script supports two modes:
 1. SRC Validation: Tests endpoints and captures responses (no expected_response)
 2. DST Contract Validation: Tests endpoints and validates responses match expected (has expected_response)
 
-Generated at: 2026-03-18T05:24:51.392837+00:00
+Generated at: 2026-03-18T05:30:55.698874+00:00
 Project: shop-belal-7
 Milestone: 2
 """
@@ -147,32 +147,38 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         "method": "POST",
         "description": "Create a product, set inventory to 100, then reserve 5 units",
         "setup": {
-            "endpoint": "/products",
-            "method": "POST",
-            "body": {
-                "name": "Reserve Test Product",
-                "description": "For reservation test",
-                "price": 25.0
-            },
-            "extract_id_from": "id"
+            "steps": [
+                {
+                    "id": "product",
+                    "endpoint": "/products",
+                    "method": "POST",
+                    "body": {
+                        "name": "Reserve Test Product",
+                        "description": "For reservation test",
+                        "price": 25.0
+                    },
+                    "extract_id_from": "id"
+                },
+                {
+                    "id": "inventory",
+                    "endpoint": "/inventory/{product_id}",
+                    "method": "PUT",
+                    "path": {
+                        "product_id": "$product_id"
+                    },
+                    "body": {
+                        "quantity": 100
+                    }
+                }
+            ]
         },
         "request_data": {
             "path": {
-                "product_id": "$setup_id"
+                "product_id": "$product_id"
             },
             "query": {},
             "body": {
                 "quantity": 5
-            },
-            "__pre_request__": {
-                "endpoint": "/inventory/{product_id}",
-                "method": "PUT",
-                "path": {
-                    "product_id": "$setup_id"
-                },
-                "body": {
-                    "quantity": 100
-                }
             }
         },
         "expected_status": 200,
@@ -496,8 +502,8 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
 )
 
 # Base URL for API requests (from app discovery, includes host:port)
-BASE_URL = os.path.expandvars("")
-HEALTH_CHECK_ENDPOINT = os.path.expandvars("")
+BASE_URL = os.path.expandvars("http://localhost:8000")
+HEALTH_CHECK_ENDPOINT = os.path.expandvars("/")
 REQUEST_TIMEOUT = 30
 HEALTH_CHECK_URL = f"{BASE_URL.rstrip('/')}/{HEALTH_CHECK_ENDPOINT.lstrip('/')}"
 # Per-endpoint routing table for microservices DST
